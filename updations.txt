@@ -1,0 +1,504 @@
+payment.component.html:
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col col-12 col-sm-8 col-md-6 mx-auto">
+            <form [formGroup]="fillTicketForm" #formRef="ngForm" (ngSubmit)="formRef.form.valid && onSubmit(template)">
+            <!-- name -->
+            <div class="form-group mt-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" name="name" id="name" class="form-control" formControlName="name">
+                 <!-- error message -->
+                 <div *ngIf="formRef.submitted || (name.dirty || name.touched) && name.invalid">
+                    <p class="text-danger alert alert-danger mt-3" *ngIf="name.errors?.['required']">Name is required <i class="fa-solid fa-circle-xmark"></i></p>
+                </div>
+                <!-- success message -->
+                <div *ngIf="name.valid">
+                    <p class="text-success alert alert-success mt-3">Name is valid <i class="fa-solid fa-circle-check"></i></p>
+                </div>
+            </div>
+            <!-- number of tickets -->
+            <div class="form-group mt-3">
+                <label for="numberOfTickets" class="form-label">Number of Tickets</label>
+                <input type="number" name="numberOfTickets" id="numberOfTickets" #ticketRef class="form-control" formControlName="numberOfTickets">
+                <button class="btn btn-info d-block mx-auto mt-3" (click)="updateTicketCount(ticketRef.value)" type="button">Go</button>
+                <h6 class="text-success text-center fw-bold mt-2" *ngIf="isSelected==true">Great! You are set for seat selection</h6>
+                <!-- error message -->
+                <div *ngIf="formRef.submitted || (numberOfTickets.dirty || numberOfTickets.touched) && numberOfTickets.invalid">
+                    <p class="text-danger alert alert-danger mt-3" *ngIf="numberOfTickets.errors?.['required']">Number of Ticket is required <i class="fa-solid fa-circle-xmark"></i></p>
+                </div>
+                <!-- success message -->
+                <div *ngIf="numberOfTickets.valid">
+                    <p class="text-success alert alert-success mt-3">Number of Ticket is valid <i class="fa-solid fa-circle-check"></i></p>
+                </div>
+            </div>
+            <!-- show type -->
+            <div class="form-group mt-3">
+                <label for="" class="form-label d-block">Seat Type</label>
+                <!-- normal -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" name="showType" value="Normal" id="Normal" class="form-check-input" (change)="seatSelection($event)" formControlName="showType">
+                    <label for="Normal" class="form-check-label">Normal</label>
+                </div>
+                <!-- executive -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" name="showType" value="Executive" id="Executive" class="form-check-input" (change)="seatSelection($event)" formControlName="showType">
+                    <label for="Executive" class="form-check-label">Executive</label>
+                </div>
+                <!-- premium -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" name="showType" value="Premium" id="Premium" class="form-check-input" (change)="seatSelection($event)" formControlName="showType">
+                    <label for="Premium" class="form-check-label">Premium</label>
+                </div>
+                <!-- VIP -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" name="showType" value="VIP" id="VIP" class="form-check-input" (change)="seatSelection($event)" formControlName="showType">
+                    <label for="VIP" class="form-check-label">VIP</label>
+                </div>
+                <!-- error message -->
+                <div *ngIf="formRef.submitted || (showType.dirty || showType.touched) && showType.invalid">
+                    <p class="text-danger alert alert-danger mt-3" *ngIf="showType.errors?.['required']">Seat Type is required <i class="fa-solid fa-circle-xmark"></i></p>
+                </div>
+                <!-- success message -->
+                <div *ngIf="showType.valid">
+                    <p class="text-success alert alert-success mt-3">Seat Type is valid <i class="fa-solid fa-circle-check"></i></p>
+                </div>
+            </div>
+            <!-- seat notification -->
+            <div class="form-group d-flex justify-content-between mt-3">
+                <div class="seatAvailable">
+                    <button class="btn btn-light me-2" type="button"><i class="fa-solid fa-loveseat"></i></button>
+                    <label class="form-label me-2">Seat Available</label>
+                </div>
+                <div class="seatSelected">
+                    <button class="btn selected me-2" type="button"><i class="fa-solid fa-loveseat"></i></button>
+                    <label class="form-label">Seat Selected</label>
+                </div>
+                <div class="seatBooked">
+                    <button class="btn booked me-2" type="button"><i class="fa-solid fa-loveseat"></i></button>
+                    <label class="form-label">Seat Booked</label>
+                </div>
+            </div>
+            <!-- seat selection -->
+            <div class="row row-cols-12 row-cols-sm-12 row-cols-md-12 mt-5">
+                <div class="col mb-3" *ngFor="let seat of seatsInfo">
+                    <button class="btn btn-light me-2" type="button" (click)="seatSelected(seat.seatNumber)" 
+                            [ngStyle]="seat.isSeatSelected==true?seat.isSeatBooked==true?{'background-color':'#FF4081','border':'1px solid #FF4081'}:{'background-color':'#00ED64','border':'1px solid #00ED64'}
+                            :{'background-color':'white'}">
+                            {{seat.seatNumber}}
+                    </button>
+                </div>
+            </div>
+            <button class="btn btn-danger d-block mx-auto mt-3">Pay {{payAmount}}</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- modal -->
+<ng-template #template>
+    <div class="modal-header text-dark">
+      <h4 class="modal-title pull-left">Modal</h4>
+      <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body text-dark text-center">
+        <i class="fa-solid fa-circle-check text-success mb-3" id="fa-circle-check"></i>
+        <h6>Payment Success</h6>
+      <button type="button" class="btn btn-primary d-block mx-auto mt-3" (click)="confirm()">Yes</button>
+    </div>
+</ng-template>
+
+
+
+
+
+payment component ts:
+
+import { Component, OnInit, TemplateRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { UserService } from '../../user.service';
+@Component({
+  selector: 'app-payment',
+  templateUrl: './payment.component.html',
+  styleUrls: ['./payment.component.css']
+})
+export class PaymentComponent implements OnInit {
+
+  modalRef?: BsModalRef;
+  seatsInfo
+  costOfSeat:number=0;
+  seatSelectedByUser:string[]=[]
+  isSelected:boolean=false
+  fillTicketForm:FormGroup
+  payAmount:number=0
+  maximumTickets:number=0
+  constructor(public formBuilderObj:FormBuilder,public userServiceObj:UserService,public routerObj:Router,public modalService: BsModalService) { }
+
+  ngOnInit(): void {
+    this.fillTicketForm=this.formBuilderObj.group({
+      name:['',[Validators.required]],
+      numberOfTickets:['',[Validators.required]],
+      showType:['',[Validators.required]],
+    })
+    this.getSeats()
+  }
+
+  //getters
+  get name(){
+    return this.fillTicketForm.get("name")
+  }
+
+  get numberOfTickets(){
+    return this.fillTicketForm.get("numberOfTickets")
+  }
+
+  get showType(){
+    return this.fillTicketForm.get("showType")
+  }
+
+  updateTicketCount(count){
+    this.isSelected=true
+    this.maximumTickets=Number(count)
+    console.log(this.maximumTickets)
+  }
+
+  seatSelection(event){
+    if(event.target.value=="Normal"){
+      this.costOfSeat=150
+    }
+    else if(event.target.value=="Executive"){
+      this.costOfSeat=220
+    }
+    else if(event.target.value=="Premium"){
+      this.costOfSeat=350
+    }
+    else if(event.target.value=="VIP"){
+      this.costOfSeat=500
+    }
+  }
+
+  seatSelected(seatNumber){
+    //console.log(this.seatSelectedByUser)
+    if((this.seatSelectedByUser.length)<(this.maximumTickets)){
+      console.log("hi")
+      console.log(this.fillTicketForm.value.numberOfTickets)
+      this.seatSelectedByUser.push(seatNumber)
+      this.payAmount=this.costOfSeat*(this.seatSelectedByUser.length)
+      console.log(this.seatSelectedByUser)
+      this.userServiceObj.getSeatUsingSeatNumber(seatNumber).subscribe({
+        next:(response)=>{
+          console.log("seat selected",response.payload)
+          response.payload.isSeatSelected=!response.payload.isSeatSelected
+          this.userServiceObj.updateSeat(response.payload).subscribe({
+            next:(data)=>{
+              console.log("Data updated")
+              console.log("length",this.seatSelectedByUser.length)
+              this.getSeats()
+            },
+            error:(error)=>{
+              alert("Something went wrong...")
+            }
+          })
+        },
+        error:(error)=>{
+          alert("Something went wrong...")
+        }
+      })
+    }
+    else{
+      alert(`Ticket limit exceeded.Maximum tickets can be selected by you is ${this.maximumTickets}`)
+    } 
+  }
+
+  getSeats(){
+    this.userServiceObj.getAllSeatsInTheatre().subscribe({
+      next:(response)=>{
+        //console.log(response)
+        this.seatsInfo=response.payload
+      },
+      error:(error)=>{
+        alert("Something went wrong...")
+      }
+    })
+  }
+
+  onSubmit(template:TemplateRef<any>){
+    //console.log(this.fillTicketForm.value)
+    //navigate to view page
+    this.openModal(template)
+    this.routerObj.navigateByUrl("/user/viewmovie")
+    for(let seats of this.seatSelectedByUser){
+      this.userServiceObj.getSeatUsingSeatNumber(seats).subscribe({
+        next:(response)=>{
+          console.log("seat selected",response.payload)
+          response.payload.isSeatBooked=!response.payload.isSeatBooked
+          this.userServiceObj.updateSeat(response.payload).subscribe({
+            next:(data)=>{
+              console.log("Data updated")
+              console.log("length",this.seatSelectedByUser.length)
+              this.getSeats()
+            },
+            error:(error)=>{
+              alert("Something went wrong...")
+            }
+          })
+        },
+        error:(error)=>{
+          alert("Something went wrong...")
+        }
+      })
+    }
+  }
+
+  openModal(template: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(template);
+  }
+
+  confirm(){
+    this.modalRef?.hide();
+  }
+  
+
+}
+
+
+
+
+
+
+
+
+login html:
+
+<div class="container mt-5">
+    <h2 class="text-center mb-2">Login User</h2>
+    <div class="row mt-3">
+        <div class="col-12 col-sm-8 col-md-6 mx-auto">
+            <form class="shadow px-5 py-5" [formGroup]="userTypeForm" #formRef="ngForm" (ngSubmit)="formRef.form.valid && onSubmit(template)">
+                <!-- user type -->
+                <div class="form-group mt-3">
+                    <label for="" class="form-label d-block"><i class="fa-solid fa-user-group"></i> User Type</label>
+                    <div class="form-check form-check-inline" *ngFor="let user of userType">
+                        <input type="radio" name="typeOfUser" [id]="user" [value]="user" class="form-check-input" (change)="userChoice($event)" formControlName="typeOfUser">
+                        <label [for]="user" class="form-label">{{user}}</label>
+                    </div>
+                </div>
+                <!-- username -->
+                <div class="form-group mt-3">
+                    <label for="" class="form-label"><i class="fa-solid fa-user"></i> Username</label>
+                    <input type="text" name="" id="" class="form-control" formControlName="username">
+                    <!-- error message -->
+                    <div *ngIf="formRef.submitted || (username.dirty || username.touched) && username.invalid">
+                        <p class="text-danger alert alert-danger mt-3" *ngIf="username.errors?.['required']">Username is required <i class="fa-solid fa-circle-xmark"></i></p>
+                    </div>
+                    <!-- success message -->
+                    <div *ngIf="username.valid">
+                        <p class="text-success alert alert-success mt-3">Username is valid <i class="fa-solid fa-circle-check"></i></p>
+                    </div>
+                </div>
+                <!-- password -->
+                <div class="form-group mt-3">
+                    <label for="" class="form-label"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" name="" id="" class="form-control" formControlName="password">
+                     <!-- error message -->
+                     <div *ngIf="formRef.submitted || (password.dirty || password.touched) && password.invalid">
+                        <p class="text-danger alert alert-danger mt-3" *ngIf="password.errors?.['required']">Password is required <i class="fa-solid fa-circle-xmark"></i></p>
+                    </div>
+                    <!-- success message -->
+                    <div *ngIf="password.valid">
+                        <p class="text-success alert alert-success mt-3">Password is valid <i class="fa-solid fa-circle-check"></i></p>
+                    </div>
+                </div>
+                <!-- button -->
+                <button class="btn d-block mx-auto mt-3" type="sumbit" id="loginButton">Login</button>
+                <!-- signup for new user -->
+                <p class="new user mt-3">
+                    New to Cinemata? Not registered ? 
+                    Please <button class="btn btn-primary rounded-pill" (click)="goToSignUp()">Sign Up</button> here
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- modal -->
+<ng-template #template>
+    <div class="modal-header text-dark">
+      <h4 class="modal-title pull-left">Login</h4>
+      <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body text-dark">
+        <div *ngIf="error==true && errorMessage=='Invalid Username'" class="text-center">
+            <i class="fa-solid fa-circle-exclamation text-danger mb-3"></i>
+            <h6>Invalid Username.Please check and retry</h6>
+        </div>
+        <div *ngIf="error==true && errorMessage=='Invalid Password'" class="text-center">
+            <i class="fa-solid fa-circle-exclamation text-danger mb-3"></i>
+            <h6 *ngIf="error==true && errorMessage=='Invalid Password'">Invalid Password.Please check and retry</h6>
+        </div>
+        <div *ngIf="error==false" class="text-center">
+            <i class="fa-solid fa-circle-check text-success mb-3" id="fa-circle-check"></i>
+            <h6>Login was Successful</h6>
+        </div>
+    </div>
+    <div class="modal-footer text-dark">
+        <button type="button" class="btn btn-primary" (click)="confirm()">Ok</button>
+    </div>
+</ng-template>
+
+
+
+
+
+login css:
+#loginButton{   
+    background-color: #4db5ff;
+}
+
+.fa-circle-exclamation,
+#fa-circle-check{
+    font-size: 55px;
+    display: block;
+    margin: auto;
+}
+
+
+login ts:
+
+import { Component, OnInit,TemplateRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router'; 
+import { UserService } from '../user.service';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
+})
+export class LoginComponent implements OnInit {
+
+  modalRef?: BsModalRef;
+  userType:string[]=["User","Admin"];
+  userTypeForm:FormGroup;
+  error:boolean=false;
+  errorMessage:string;
+  
+  constructor(public routerObj:Router,public formBuilderObj:FormBuilder,public userServiceObj:UserService,public modalService: BsModalService) { }
+
+  ngOnInit(): void {
+    this.userTypeForm=this.formBuilderObj.group({
+      typeOfUser:[''],
+      username:['',[Validators.required]],
+      password:['',[Validators.required]]
+    })
+  }
+
+  //getters
+
+  get username(){
+    return this.userTypeForm.get("username")
+  }
+
+  get password(){
+    return this.userTypeForm.get("password")
+  }
+
+  goToSignUp(){
+    this.routerObj.navigateByUrl("/signup")
+  }
+
+  userChoice(event){
+    console.log(event.target.value)
+    if(event.target.value=="User"){
+      console.log("Hi user")
+    }
+    else if(event.target.value=="Admin"){
+      console.log("Hi admin")
+    }
+  }
+
+  onSubmit(template:TemplateRef<any>){
+    //console.log(this.userTypeForm.value)
+    let loginCredentials = this.userTypeForm.value
+    if(loginCredentials.typeOfUser=="User"){
+      //remove user type
+      delete loginCredentials.typeOfUser
+      //subscribe to Observable
+      this.userServiceObj.loginUser(loginCredentials).subscribe({
+        next:(response)=>{
+          if(response.message=="Invalid Username"){
+            //alert("Invalid Username")
+            this.error=true
+            this.errorMessage="Invalid Username"
+            this.openModal(template)
+          }
+          else if(response.message=="Invalid Password"){
+            //alert("Invalid Password")
+            this.error=true
+            this.errorMessage="Invalid Password"
+            this.openModal(template)
+          }
+          else if(response.message=="Login Successful"){
+            //success login
+            this.openModal(template)
+            //create a token
+            localStorage.setItem("token",response.token)
+            //set the userObj
+            this.userServiceObj.dataOfLoggedUserBehaviourSubject.next(response.user)
+            //navigate to user dashboard
+            this.routerObj.navigateByUrl("/user")
+          }
+        },
+        error:(error)=>{
+          console.log("Error",error.message)
+        }
+      })
+    }
+    else if(loginCredentials.typeOfUser=="Admin"){
+       //remove user type
+       delete loginCredentials.typeOfUser
+       console.log(loginCredentials)
+       //subscribe to Observable
+       this.userServiceObj.loginAdmin(loginCredentials).subscribe({
+        next:(response)=>{
+          if(response.message=="Invalid Username"){
+            alert("Invalid Username")
+           
+          }
+          if(response.message=="Invalid Password"){
+            alert("Invalid Password")
+          }
+          if(response.message=="Login Successful"){
+            console.log("login sucesss..")
+            //create a token
+            localStorage.setItem("token",response.token)
+            //set the admin Obj
+            this.userServiceObj.dataOfLoggedUserBehaviourSubject.next(response.admin)
+            //navigate to admin dashboard
+            this.routerObj.navigateByUrl("/admin")
+          }
+        },
+        error:(error)=>{
+          console.log("Error",error.message)
+        }
+      })
+    }
+
+    
+  }
+
+  openModal(template: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(template);
+  }
+
+  confirm(){
+    this.modalRef.hide()
+  }
+
+}
