@@ -502,3 +502,30 @@ export class LoginComponent implements OnInit {
   }
 
 }
+
+
+payment css
+
+.fa-square{
+    color: white;
+}
+
+#fa-circle-check{
+    font-size: 55px;
+    display: block;
+    margin: auto;
+}
+
+.selected{
+    background-color: #00ED64;
+    border: 1px solid #00ED64;
+}
+
+.booked{
+    background-color: #FF4081;
+    border: 1px solid #FF4081;
+}
+
+.fa-loveseat{
+    color: black;
+}
